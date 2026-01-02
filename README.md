@@ -1,67 +1,54 @@
-# FIPE Crawler & Database Importer 🚗
+FIPE Crawler & Database Importer
+Este projeto oferece ferramentas para extrair dados atualizados diretamente da Tabela FIPE oficial e organizá-los em bancos de dados SQL ou arquivos CSV.
 
-Este projeto contém um conjunto de ferramentas para extrair a Tabela FIPE oficial atualizada (via API) e importá-la para um banco de dados ou planilha CSV.
+Ao contrário de repositórios que disponibilizam listas estáticas (que perdem a validade em pouco tempo), este script consulta a API da FIPE em tempo real, garantindo que você tenha sempre as informações mais recentes.
 
-Diferente de listas estáticas no GitHub que ficam desatualizadas rapidamente, este projeto busca os dados **em tempo real** da API oficial da FIPE.
+O que o projeto faz
+Extração de Dados (fetch_fipe_api.py)
+O crawler principal é responsável por navegar na API da FIPE e consolidar as informações.
 
-## 🚀 Funcionalidades
+Abrangência: Focado em carros, mas facilmente ajustável para motos e caminhões.
+Saída: Gera um arquivo fipe_completa.csv compatível com Excel e ferramentas de análise de dados.
+Estabilidade: Inclui um sistema de tentativas automáticas e espera progressiva para evitar bloqueios por excesso de requisições (Erro 429).
+Persistência: O progresso é salvo durante a execução, permitindo retomar de onde parou caso a conexão caia.
+Integração com Banco de Dados (import_fipe_data.py e create_tables.sql)
+Ferramentas para quem precisa estruturar os dados de forma profissional:
 
-- **Crawler Inteligente (`fetch_fipe_api.py`)**:
-    - Consulta a API oficial da FIPE.
-    - Baixa dados de Carros (configurável para Motos e Caminhões).
-    - Gera um arquivo CSV (`fipe_completa.csv`) pronto para uso Excel/Data Analysis.
-    - **Resiliente**: Possui lógica de "retry" e espera exponencial para evitar bloqueios da API (Erro 429).
-    - Salva progresso incrementalmente (não perde dados se parar).
+Modelagem: Scripts SQL prontos para criar tabelas de veículos e histórico de preços.
+Conversão: Transforma o arquivo CSV em comandos INSERT para facilitar a importação em massa para bancos como PostgreSQL ou MySQL.
+Como utilizar
+1. Preparação
+Com o Python instalado no seu sistema, instale a biblioteca necessária para as requisições:
 
-- **Importador de Banco de Dados (`import_fipe_data.py` e `create_tables.sql`)**:
-    - Script SQL para criar tabelas otimizadas (`fipe_veiculos` e `fipe_historico_precos`).
-    - Script Python que converte o CSV gerado em comandos `INSERT` SQL para importação em massa.
-
-## 🛠️ Como Usar
-
-### 1. Pré-requisitos
-Certifique-se de ter o Python instalado.
-Instale as dependências:
-
-```bash
+bash
+copiar
+baixar
 pip install requests
-```
+2. Coleta de dados
+Para iniciar a extração da tabela atual, execute:
 
-### 2. Baixar Dados da FIPE
-Execute o crawler para obter a tabela mais recente:
-
-```bash
+bash
+copiar
+baixar
 python fetch_fipe_api.py
-```
-*O processo pode demorar alguns minutos a horas dependendo da quantidade de veículos, pois respeita os limites da API.*
-O resultado será salvo em `fipe_completa.csv`.
+Atenção: O processo pode levar de alguns minutos a algumas horas. O script respeita os limites da API para garantir que a coleta seja concluída sem interrupções.
 
-### 3. Importar para Banco de Dados (SQL)
-Se você deseja os dados em um banco SQL (PostgreSQL, MySQL, etc.):
+3. Importação para SQL
+Caso prefira trabalhar com um banco de dados relacional:
 
-1.  Crie as tabelas no seu banco:
-    (Copie o conteúdo de `create_tables.sql` e execute no seu cliente SQL)
-
-2.  Gere o script de inserção:
-    ```bash
-    python import_fipe_data.py
-    ```
-    Isso criará o arquivo `insert_data.sql`.
-
-3.  Execute o script gerado no seu banco:
-    ```sql
-    -- Exemplo psql
-    \i insert_data.sql
-    ```
-
-## 📋 Estrutura do CSV
-O arquivo gerado contém as seguintes colunas:
-`Tipo;Marca;Modelo;Ano;Valor;CodigoFipe;Combustivel`
+Execute as instruções contidas em create_tables.sql no seu console de banco de dados para criar a estrutura necessária.
+Gere o arquivo de importação executando:
+bash
+copiar
+baixar
+python import_fipe_data.py
+O script criará um arquivo insert_data.sql. Basta rodar esse arquivo no seu banco de dados para popular as tabelas.
+Formato dos dados
+O CSV final utiliza o ponto e vírgula (;) como separador e segue esta estrutura:
+Tipo;Marca;Modelo;Ano;Valor;CodigoFipe;Combustivel
 
 Exemplo:
-```csv
 Carro;Acura;Integra GS 1.8;1992;R$ 10.942,00;038003-2;Gasolina
-```
 
-## ⚠️ Aviso Legal
-Este projeto consulta dados públicos da Fundação Instituto de Pesquisas Econômicas (FIPE). Use com responsabilidade e respeite os limites de requisição da API.
+Observações importantes
+Este software é uma ferramenta de automação para consulta de dados públicos fornecidos pela Fundação Instituto de Pesquisas Econômicas (FIPE). Ao utilizá-lo, certifique-se de respeitar os termos de uso da instituição e evite sobrecarregar os servidores com requisições desnecessárias.
